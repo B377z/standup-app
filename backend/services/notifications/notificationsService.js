@@ -1,6 +1,17 @@
 const express = require('express');
 const nodemailer = require('nodemailer');
 const router = express.Router();
+const mongoose = require('mongoose');  // Add this line
+
+const NotificationSchema = new mongoose.Schema({
+    to: String,
+    subject: String,
+    text: String,
+    status: { type: String, default: 'sent' },
+    createdAt: { type: Date, default: Date.now }
+});
+
+const Notification = mongoose.models.Notification || mongoose.model('Notification', NotificationSchema, 'notifications');
 
 // Configure the email transport using the default SMTP transport and a Gmail account.
 // Use port 587 (TLS) for Gmail
@@ -31,10 +42,31 @@ router.post('/notify', async (req, res) => {
     try {
         // Send email
         await transporter.sendMail(mailOptions);
+
+        // Save notification to the database
+        const notification = new Notification({
+            to: to,
+            subject: subject,
+            text: text,
+            status: 'sent'
+        });
+        await notification.save();
+
         res.status(200).json({ message: 'Notification sent' }); // Return JSON response
     } catch (error) {
         console.error('Error sending email:', error);
         res.status(500).json({ error: 'Error sending notification', details: error.message });
+    }
+});
+
+// Endpoint to get all notifications
+router.get('/', async (req, res) => {
+    try {
+        const notifications = await Notification.find();
+        res.json(notifications);
+    } catch (error) {
+        console.error('Error fetching notifications:', error);
+        res.status(500).json({ error: 'Error fetching notifications' });
     }
 });
 

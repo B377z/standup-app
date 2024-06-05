@@ -1,0 +1,46 @@
+.backoffice-container {
+  padding: 20px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+nav a {
+  margin: 0 10px;
+  text-decoration: none;
+  color: #333;
+}
+
+.filter-container {
+  margin: 20px 0;
+}
+
+.filter-btn {
+  margin: 0 5px;
+  padding: 10px;
+  border: none;
+  background: #f0f0f0;
+  cursor: pointer;
+}
+
+.filter-btn.active {
+  background: #333;
+  color: #fff;
+}
+
+.content-container ul {
+  list-style: none;
+  padding: 0;
+}
+
+.content-container li {
+  margin: 10px 0;
+  padding: 10px;
+  border: 1px solid #ccc;
+}
+
+  
+  

@@ -1,18 +1,9 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const router = express.Router();
-
-// Define the schema for proposals
-const ProposalSchema = new mongoose.Schema({
-    title: String,
-    speaker: String,
-    speakerEmail: String,
-    description: String,
-    status: { type: String, default: 'pending' }
-});
-
-// Check if the model already exists before creating it
-const Proposal = mongoose.models.Proposal || mongoose.model('Proposal', ProposalSchema, 'proposals');
+const Proposal = require('../../models/Proposal');
+const Event = require('../../models/Event');
+const Speaker = require('../../models/Speaker');
 
 // Endpoint to submit a proposal
 router.post('/', async (req, res) => {
@@ -100,6 +91,18 @@ router.put('/approve/:id', async (req, res) => {
         const newTalk = new Talk(proposal.toObject());
         await newTalk.save();
 
+        // Create an event related to the approved proposal
+        const event = new Event({
+            title: proposal.title,
+            description: proposal.description,
+            date: new Date(), // or any specific date
+            location: 'Conference Hall 1', // or any specific location
+            duration: 60, // or any specific duration
+            speakers: [proposal.speaker],
+            proposal: proposal._id,
+        });
+        await event.save();
+
         res.json(proposal);
     } catch (error) {
         console.error('Error approving proposal:', error);
@@ -145,4 +148,17 @@ router.put('/reject/:id', async (req, res) => {
     }
 });
 
+router.get('/approved', async (req, res) => {
+    console.log('Fetching all approved proposals');
+    try {
+        const proposals = await Proposal.find({ status: 'approved' });
+        console.log('Approved proposals fetched:', proposals);
+        res.json(proposals);
+    } catch (error) {
+        console.error('Error fetching proposals:', error);
+        res.status(500).json({ error: 'Error fetching proposals' });
+    }
+});
+
 module.exports = router;
+
