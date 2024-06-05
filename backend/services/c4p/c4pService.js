@@ -1,5 +1,8 @@
+// services/c4p/c4pService.js
 const express = require('express');
 const mongoose = require('mongoose');
+const Notification = require('../../model/Notifications');
+
 const router = express.Router();
 
 // Define the schema for proposals
@@ -12,7 +15,38 @@ const ProposalSchema = new mongoose.Schema({
 });
 
 // Check if the model already exists before creating it
-const Proposal = mongoose.models.Proposal || mongoose.model('Proposal', ProposalSchema, 'proposals');
+const Proposal = mongoose.models.Proposal || mongoose.model('Proposal', ProposalSchema, 
+'proposals');
+
+// Use dynamic import for node-fetch
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+
+const sendNotification = async (notification) => {
+    try {
+        const response = await fetch(`${process.env.NOTIFICATIONS_URL}/notify`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(notification)
+        });
+
+        console.log(`Sending notification to ${process.env.NOTIFICATIONS_URL}/notify`);
+
+        if (!response.ok) {
+            throw new Error(`Failed to send notification: ${response.statusText}`);
+        }
+
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            throw new Error('Invalid content type in response from notification service');
+        }
+
+        const notificationResponse = await response.json();
+        console.log('Notification response:', notificationResponse);
+    } catch (error) {
+        console.error('Error sending notification:', error.message);
+        throw error;
+    }
+};
 
 // Endpoint to submit a proposal
 router.post('/', async (req, res) => {
@@ -20,29 +54,19 @@ router.post('/', async (req, res) => {
     const proposal = new Proposal(req.body);
 
     try {
-        // Save the proposal to the database
         await proposal.save();
         console.log('Proposal saved:', proposal);
 
-        // Dynamically import node-fetch
-        const fetch = (await import('node-fetch')).default;
-
-        // Prepare the notification
-        const notification = {
+        const notification = new Notification({
             to: proposal.speakerEmail,
             subject: 'Proposal Submitted',
             text: `Dear ${proposal.speaker},\n\nYour proposal "${proposal.title}" has been submitted successfully.`
-        };
-
-        // Send the notification
-        const response = await fetch(`${process.env.NOTIFICATIONS_URL}/notify`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(notification)
         });
 
-        const notificationResponse = await response.json();
-        console.log('Notification response:', notificationResponse);
+        await notification.save();
+        console.log('Notification saved:', notification);
+
+        await sendNotification(notification);
 
         res.status(201).json(proposal);
     } catch (error) {
@@ -75,25 +99,16 @@ router.put('/approve/:id', async (req, res) => {
         }
         console.log('Proposal approved:', proposal);
 
-        // Dynamically import node-fetch
-        const fetch = (await import('node-fetch')).default;
-
-        // Prepare the notification
-        const notification = {
+        const notification = new Notification({
             to: proposal.speakerEmail,
             subject: 'Proposal Approved',
             text: `Dear ${proposal.speaker},\n\nYour proposal "${proposal.title}" has been approved.`
-        };
-
-        // Send the notification
-        const response = await fetch(`${process.env.NOTIFICATIONS_URL}/notify`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(notification)
         });
 
-        const notificationResponse = await response.json();
-        console.log('Notification response:', notificationResponse);
+        await notification.save();
+        console.log('Notification saved:', notification);
+
+        await sendNotification(notification);
 
         // Insert the approved proposal into the talks collection
         const Talk = mongoose.models.Talk || mongoose.model('Talk', ProposalSchema, 'talks');
@@ -118,25 +133,16 @@ router.put('/reject/:id', async (req, res) => {
         }
         console.log('Proposal rejected:', proposal);
 
-        // Dynamically import node-fetch
-        const fetch = (await import('node-fetch')).default;
-
-        // Prepare the notification
-        const notification = {
+        const notification = new Notification({
             to: proposal.speakerEmail,
             subject: 'Proposal Rejected',
             text: `Dear ${proposal.speaker},\n\nYour proposal "${proposal.title}" has been rejected.`
-        };
-
-        // Send the notification
-        const response = await fetch(`${process.env.NOTIFICATIONS_URL}/notify`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(notification)
         });
 
-        const notificationResponse = await response.json();
-        console.log('Notification response:', notificationResponse);
+        await notification.save();
+        console.log('Notification saved:', notification);
+
+        await sendNotification(notification);
 
         res.json(proposal);
     } catch (error) {

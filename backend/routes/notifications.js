@@ -1,24 +1,9 @@
 const express = require('express');
-const nodemailer = require('nodemailer');
 const router = express.Router();
-const Notification = require('../../model/Notifications'); // Ensure this path is correct
+const Notification = require('../model/Notifications');
 
-// Configure the email transport using the default SMTP transport and a Gmail account
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    },
-    port: 587,
-    secure: false, // use TLS
-    tls: {
-        rejectUnauthorized: false
-    }
-});
-
-// Endpoint to send notifications
-router.post('/notify', async (req, res) => {
+// Endpoint to create a new notification
+router.post('/', async (req, res) => {
     const { to, subject, text } = req.body;
 
     const mailOptions = {
@@ -43,12 +28,13 @@ router.post('/notify', async (req, res) => {
     }
 });
 
-// Endpoint to fetch all notifications
+// Endpoint to get all notifications
 router.get('/', async (req, res) => {
     try {
         const notifications = await Notification.find();
         res.json(notifications);
     } catch (error) {
+        console.error('Error fetching notifications:', error);
         res.status(500).json({ error: 'Error fetching notifications' });
     }
 });
