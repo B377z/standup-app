@@ -5,10 +5,10 @@ const cors = require('cors');
 
 console.log('Connecting to MongoDB:', process.env.MONGODB_URI);
 
-const agendaService = require('./services/agenda/agendaService');
 const c4pService = require('./services/c4p/c4pService');
 const notificationsService = require('./services/notifications/notificationsService');
-const talksService = require('./services/talks/talksService');
+const agendaService = require('./services/agenda/agendaService');
+const eventsService = require('./services/events/eventsService'); // Corrected path
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -33,7 +33,8 @@ mongoose.connect(process.env.MONGODB_URI)
 app.use('/api/agenda', agendaService);
 app.use('/api/c4p', c4pService);
 app.use('/api/notifications', notificationsService);
-app.use('/api/talks', talksService); // Add this line to use the Talks service
+app.use('/api/agenda', agendaService); // Add this line to use the Talks service
+app.use('/api/events', eventsService);
 
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);

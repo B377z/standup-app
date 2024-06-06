@@ -1,7 +1,7 @@
 const express = require('express');
 const nodemailer = require('nodemailer');
 const router = express.Router();
-const Notification = require('../../model/Notifications'); // Ensure this path is correct
+const Notification = require('../../models/Notifications'); // Ensure this path is correct
 
 // Configure the email transport using the default SMTP transport and a Gmail account
 const transporter = nodemailer.createTransport({

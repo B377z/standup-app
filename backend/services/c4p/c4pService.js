@@ -1,25 +1,12 @@
-// services/c4p/c4pService.js
 const express = require('express');
 const mongoose = require('mongoose');
-const Notification = require('../../model/Notifications');
-
+const Notification = require('../../models/Notifications');
+const Proposal = require('../../models/Proposal');
 const router = express.Router();
-
-// Define the schema for proposals
-const ProposalSchema = new mongoose.Schema({
-    title: String,
-    speaker: String,
-    speakerEmail: String,
-    description: String,
-    status: { type: String, default: 'pending' }
-});
-
-// Check if the model already exists before creating it
-const Proposal = mongoose.models.Proposal || mongoose.model('Proposal', ProposalSchema, 
-'proposals');
+const Agenda = require('../../models/Agenda');
 
 // Use dynamic import for node-fetch
-const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
 const sendNotification = async (notification) => {
     try {
@@ -58,9 +45,9 @@ router.post('/', async (req, res) => {
         console.log('Proposal saved:', proposal);
 
         const notification = new Notification({
-            to: proposal.speakerEmail,
+            to: proposal.speaker.email,
             subject: 'Proposal Submitted',
-            text: `Dear ${proposal.speaker},\n\nYour proposal "${proposal.title}" has been submitted successfully.`
+            text: `Dear ${proposal.speaker.name},\n\nYour proposal "${proposal.title}" has been submitted successfully.`
         });
 
         await notification.save();
@@ -100,9 +87,9 @@ router.put('/approve/:id', async (req, res) => {
         console.log('Proposal approved:', proposal);
 
         const notification = new Notification({
-            to: proposal.speakerEmail,
+            to: proposal.speaker.email,
             subject: 'Proposal Approved',
-            text: `Dear ${proposal.speaker},\n\nYour proposal "${proposal.title}" has been approved.`
+            text: `Dear ${proposal.speaker.name},\n\nYour proposal "${proposal.title}" has been approved.`
         });
 
         await notification.save();
@@ -110,10 +97,13 @@ router.put('/approve/:id', async (req, res) => {
 
         await sendNotification(notification);
 
-        // Insert the approved proposal into the talks collection
-        const Talk = mongoose.models.Talk || mongoose.model('Talk', ProposalSchema, 'talks');
-        const newTalk = new Talk(proposal.toObject());
-        await newTalk.save();
+        // Insert the approved proposal into the agenda collection
+        const newAgenda = new Agenda({
+            title: proposal.title,
+            description: proposal.description,
+            speakers: [proposal.speaker]
+        });
+        await newAgenda.save();
 
         res.json(proposal);
     } catch (error) {
@@ -134,9 +124,9 @@ router.put('/reject/:id', async (req, res) => {
         console.log('Proposal rejected:', proposal);
 
         const notification = new Notification({
-            to: proposal.speakerEmail,
+            to: proposal.speaker.email,
             subject: 'Proposal Rejected',
-            text: `Dear ${proposal.speaker},\n\nYour proposal "${proposal.title}" has been rejected.`
+            text: `Dear ${proposal.speaker.name},\n\nYour proposal "${proposal.title}" has been rejected.`
         });
 
         await notification.save();
@@ -148,6 +138,23 @@ router.put('/reject/:id', async (req, res) => {
     } catch (error) {
         console.error('Error rejecting proposal:', error);
         res.status(500).json({ error: 'Error rejecting proposal' });
+    }
+});
+
+// Endpoint to fetch approved speakers
+router.get('/approved-speakers', async (req, res) => {
+    try {
+        const approvedProposals = await Proposal.find({ status: 'approved' });
+        const speakers = approvedProposals.map(proposal => ({
+            name: proposal.speaker.name,
+            email: proposal.speaker.email,
+            title: proposal.title,
+            description: proposal.description
+        }));
+        res.json(speakers);
+    } catch (error) {
+        console.error('Error fetching approved speakers:', error);
+        res.status(500).json({ error: 'Error fetching approved speakers' });
     }
 });
 
