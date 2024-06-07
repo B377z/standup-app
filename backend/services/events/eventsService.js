@@ -3,9 +3,10 @@ const router = express.Router();
 const Event = require('../../models/Event');
 const Agenda = require('../../models/Agenda'); // Import the Agenda model
 const Proposal = require('../../models/Proposal'); // Import the Proposal model
+const auth = require('../../middleware/auth'); // Import the auth middleware
 
 // Endpoint to create an event
-router.post('/', async (req, res) => {
+router.post('/', auth, async (req, res) => {
     const { title, description, date, location, duration, speakers } = req.body;
   
     try {
@@ -42,45 +43,43 @@ router.post('/', async (req, res) => {
     }
   });
 
-// Endpoint to update an event to add more speakers
+// Endpoint to update an event to add more speakers using agenda IDs
 router.put('/:id/add-speakers', async (req, res) => {
-  const { proposalIds } = req.body; // Extract the proposal IDs from the request body
-
-  try {
-    // Check if the provided proposal IDs exist and are approved
-    const proposals = await Proposal.find({ _id: { $in: proposalIds }, status: 'approved' });
-
-    if (proposals.length !== proposalIds.length) {
-      return res.status(400).json({ error: 'Invalid or unapproved proposals' });
+    const { agendaIds } = req.body;
+  
+    try {
+      // Validate agenda items
+      const agendas = await Agenda.find({ _id: { $in: agendaIds } });
+  
+      if (agendas.length !== agendaIds.length) {
+        return res.status(400).json({ error: 'Invalid or unapproved agendas' });
+      }
+  
+      // Update the event to add more speakers
+      const event = await Event.findByIdAndUpdate(
+        req.params.id,
+        { $addToSet: { speakers: { $each: agendaIds } } },
+        { new: true }
+      ).populate('speakers');
+  
+      if (!event) {
+        return res.status(404).json({ error: 'Event not found' });
+      }
+  
+      res.json(event);
+    } catch (error) {
+      res.status(500).json({ error: 'Error updating event' });
     }
-
-    // Update the event to add more speakers
-    const event = await Event.findByIdAndUpdate(
-      req.params.id,
-      { $addToSet: { speakers: { $each: proposalIds } } }, // Add the proposal IDs to the speakers array
-      { new: true }
-    ).populate('speakers'); // Populate the speakers field with the speaker details
-
-    if (!event) {
-      return res.status(404).json({ error: 'Event not found' });
+  });
+  
+  // Endpoint to get all events
+  router.get('/', async (req, res) => {
+    try {
+      const events = await Event.find().populate('speakers');
+      res.json(events);
+    } catch (error) {
+      res.status(500).json({ error: 'Error fetching events' });
     }
-
-    res.json(event); // Return the updated event
-  } catch (error) {
-    console.error('Error updating event:', error);
-    res.status(500).json({ error: 'Error updating event' });
-  }
-});
-
-// Endpoint to get all events
-router.get('/', async (req, res) => {
-  try {
-    const events = await Event.find().populate('speakers'); // Populate the speakers field with the speaker details
-    res.json(events); // Return the list of events
-  } catch (error) {
-    console.error('Error fetching events:', error);
-    res.status(500).json({ error: 'Error fetching events' });
-  }
-});
+  });
 
 module.exports = router;
