@@ -10,7 +10,7 @@ export default function SubmitProposal() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await axios.post('/api/c4p', {
+    await axios.post('${process.env.NEXT_PUBLIC_API_URL}/c4p', {
       title,
       description,
       speaker: { name, email }

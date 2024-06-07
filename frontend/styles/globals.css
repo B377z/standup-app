@@ -3,15 +3,15 @@ body {
   margin: 0;
   padding: 0;
   font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
-  background-color: #282828;
-  color: #f5f5f5;
+  background-color: #d3d1d1;
+  color: #323131;
 }
 
 main {
-  text-align: center;
+  text-align: left;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  justify-content: flex-start;
+  align-items: last left;
   flex-direction: column;
   min-height: 100vh;
   padding: 20px;

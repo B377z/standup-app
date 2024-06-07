@@ -1,14 +1,30 @@
+// frontend/components/Navbar.js
 import Link from 'next/link';
+import { useRouter } from 'next/router';
+import styles from '../styles/Navbar.module.css';
 
-const Navbar = () => (
-  <nav>
-    <ul>
-      <li><Link href="/">Home</Link></li>
-      <li><Link href="/login">Login</Link></li>
-      <li><Link href="/register">Register</Link></li>
-      <li><Link href="/backoffice">Back Office</Link></li>
-    </ul>
-  </nav>
-);
+const Navbar = () => {
+  const router = useRouter();
+
+  return (
+    <nav className={styles.navbar}>
+      <ul className={styles.navList}>
+        <li className={router.pathname === "/" ? styles.active : ""}>
+          <Link href="/">Home</Link>
+        </li>
+        <li className={router.pathname === "/submitProposal" ? styles.active : ""}>
+          <Link href="/submitProposal">Submit a Proposal</Link>
+        </li>
+        <li className={router.pathname === "/events" ? styles.active : ""}>
+          <Link href="/events">View Events</Link>
+        </li>
+        <li className={router.pathname === "/register" ? styles.active : ""}>
+          <Link href="/register">Register for Events</Link>
+        </li>
+      </ul>
+    </nav>
+  );
+};
 
 export default Navbar;
+
