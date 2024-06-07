@@ -10,7 +10,7 @@ const Navbar = () => {
     <nav className={styles.navbar}>
       <ul className={styles.navList}>
         <li className={router.pathname === "/" ? styles.active : ""}>
-          <Link href="/">Home</Link>
+          <Link href="/login">Home</Link>
         </li>
         <li className={router.pathname === "/submitProposal" ? styles.active : ""}>
           <Link href="/submitProposal">Submit a Proposal</Link>

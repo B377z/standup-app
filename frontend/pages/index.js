@@ -10,6 +10,7 @@ export default function Home() {
           <li><Link href="/submitProposal">Submit a Proposal</Link></li>
           <li><Link href="/events">View Events</Link></li>
           <li><Link href="/register">Register for Events</Link></li>
+          <li><Link href="/login">Login</Link></li>
         </ul>
       </nav>
     </div>

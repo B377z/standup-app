@@ -7,7 +7,7 @@ export default function Events() {
 
   useEffect(() => {
     async function fetchEvents() {
-      const response = await axios.get('/api/events');
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/events`);
       setEvents(response.data);
     }
     fetchEvents();

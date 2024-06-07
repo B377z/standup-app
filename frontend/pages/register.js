@@ -11,7 +11,7 @@ export default function Register() {
   useEffect(() => {
     async function fetchEvents() {
       try {
-        const response = await axios.get('/api/events');
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/events`);
         setEvents(response.data);
       } catch (error) {
         console.error('Error fetching events:', error);
@@ -23,7 +23,7 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('/api/attendees', {
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/attendees`, {
         name,
         email,
         event: eventId

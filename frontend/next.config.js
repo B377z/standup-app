@@ -9,17 +9,7 @@ const nextConfig = {
         },
       ];
     },
-    async redirects() {
-      return [
-        {
-          source: '/',
-          destination: '/register', // Redirect root to /register
-          permanent: false,
-        },
-      ];
-    },
-  };
-  
+} 
   module.exports = nextConfig;
   
   

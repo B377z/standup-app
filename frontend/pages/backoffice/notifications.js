@@ -18,7 +18,7 @@ const Notifications = () => {
     if (token) {
       const fetchNotifications = async () => {
         try {
-          const response = await axios.get('${process.env.NEXT_PUBLIC_API_URL}/notifications', {
+          const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/notifications`, {
             headers: { 'x-auth-token': token },
           });
           setNotifications(response.data);
