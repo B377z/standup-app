@@ -5,8 +5,16 @@ import BackOfficeLayout from '../../components/BackOfficeLayout';
 
 const Proposals = () => {
   const [proposals, setProposals] = useState([]);
-  const token = localStorage.getItem('token');
-
+  const [token, setToken] = useState(null);
+  
+  useEffect(() => {
+    // Access localStorage only on the client side
+    if (typeof window !== 'undefined') {
+      const storedToken = localStorage.getItem('token');
+      setToken(storedToken);
+    }
+  }, []);
+  
   useEffect(() => {
     const fetchProposals = async () => {
       try {

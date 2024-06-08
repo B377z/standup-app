@@ -5,7 +5,15 @@ import BackOfficeLayout from '../../components/BackOfficeLayout';
 
 const Attendees = () => {
   const [attendees, setAttendees] = useState([]);
-  const token = localStorage.getItem('token');
+  const [token, setToken] = useState(null);  
+  
+  useEffect(() => {
+    // Access localStorage only on the client side
+    if (typeof window !== 'undefined') {
+      const storedToken = localStorage.getItem('token');
+      setToken(storedToken);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchAttendees = async () => {
