@@ -1,31 +1,43 @@
 // pages/events.js
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import BackOfficeLayout from '../components/BackOfficeLayout';
+import Link from 'next/link';
 
-export default function Events() {
+const Events = () => {
   const [events, setEvents] = useState([]);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     async function fetchEvents() {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/events`);
-      setEvents(response.data);
+      try {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/events`);
+        setEvents(response.data);
+      } catch (err) {
+        setError('Error fetching events. Please try again later.');
+        console.error('Network error:', err);
+      }
     }
     fetchEvents();
   }, []);
 
   return (
-    <div>
+    <BackOfficeLayout>
       <h1>Events</h1>
+      {error && <p>{error}</p>}
+      <Link href="/backoffice/create-event">
+        Create Event
+      </Link>
       <ul>
         {events.map(event => (
           <li key={event._id}>
-            <h2>{event.title}</h2>
+            <p>{event.title}</p>
             <p>{event.description}</p>
-            <p>Location: {event.location}</p>
-            <p>Date: {new Date(event.date).toLocaleDateString()}</p>
           </li>
         ))}
       </ul>
-    </div>
+    </BackOfficeLayout>
   );
-}
+};
+
+export default Events;
